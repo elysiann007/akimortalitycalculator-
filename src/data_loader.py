@@ -10,6 +10,7 @@ from urllib.parse import quote
 def load_csv(filepath: Union[str, Path]) -> pd.DataFrame:
     """Load data from CSV file"""
     df = pd.read_csv(filepath)
+    df.columns = df.columns.str.lower()
     return df
 
 def load_from_postgres(host: str, port: int, database: str, user: str, 
@@ -38,6 +39,7 @@ def load_from_postgres(host: str, port: int, database: str, user: str,
     engine = create_engine(f'postgresql://{user}:{encoded_password}@{host}:{port}/{database}')
     df = pd.read_sql(query, engine)
     engine.dispose()
+    df.columns = df.columns.str.lower()
     return df
 
 def load_data(filepath: Union[str, Path] = None, use_postgres: bool = False,
@@ -62,7 +64,7 @@ def load_data(filepath: Union[str, Path] = None, use_postgres: bool = False,
             raise ValueError("filepath required for CSV loading")
         return load_csv(filepath)
 
-def validate_data(df: pd.DataFrame, target_column: str = 'deathFlag') -> Tuple[bool, str]:
+def validate_data(df: pd.DataFrame, target_column: str = 'deathflag') -> Tuple[bool, str]:
     """
     Validate dataset structure and content
     
@@ -84,7 +86,7 @@ def validate_data(df: pd.DataFrame, target_column: str = 'deathFlag') -> Tuple[b
     
     return True, f"Validation passed: {df.shape[0]} rows, {df.shape[1]} columns"
 
-def get_data_summary(df: pd.DataFrame, target_column: str = 'deathFlag') -> dict:
+def get_data_summary(df: pd.DataFrame, target_column: str = 'deathflag') -> dict:
     """
     Get summary statistics of dataset
     

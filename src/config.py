@@ -9,7 +9,7 @@ RANDOM_STATE = 42
 
 # Data parameters
 TEST_SIZE = 0.2
-TARGET_COLUMN = 'deathflag'  # Actual column name in PostgreSQL table
+TARGET_COLUMN = 'deathflag'  # Lowercase — PostgreSQL always returns column names lowercase
 IDENTIFIER_COLUMNS = ['row_id', 'id', 'protocol_no', 'patient_id', 'study_id']
 
 # File paths
@@ -33,7 +33,7 @@ POSTGRES_HOST = 'localhost'
 POSTGRES_PORT = 5432
 POSTGRES_DATABASE = 'M3'
 POSTGRES_USER = 'postgres'
-POSTGRES_PASSWORD = '93abH@llo810'
+POSTGRES_PASSWORD = '123456'
 POSTGRES_TABLE = 'deu_retro_clean'
 POSTGRES_QUERY = f'SELECT * FROM {POSTGRES_TABLE}'
 

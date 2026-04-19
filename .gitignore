@@ -135,5 +135,11 @@ Thumbs.db
 
 # Project-specific
 data/deu_icu_mortality.csv
-outputs/
-.streamlit/
+
+# outputs — modeller dahil, gereksiz dosyalar hariç
+outputs/figures/
+outputs/tables/
+outputs/models/*.tmp
+
+# Claude memory
+.claude/

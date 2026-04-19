@@ -6,6 +6,11 @@ DEU Hospital Dataset Analysis
 import warnings
 warnings.filterwarnings('ignore')
 
+import sys, io
+if sys.stdout.encoding and sys.stdout.encoding.lower() != 'utf-8':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -45,7 +50,7 @@ POSTGRES_HOST = 'localhost'
 POSTGRES_PORT = 5432
 POSTGRES_DATABASE = 'M3'
 POSTGRES_USER = 'postgres'
-POSTGRES_PASSWORD = '93abH@llo810'
+POSTGRES_PASSWORD = '123456'
 POSTGRES_TABLE = 'deu_retro_clean'
 POSTGRES_QUERY = f'SELECT * FROM {POSTGRES_TABLE}'
 
@@ -56,14 +61,18 @@ POSTGRES_QUERY = f'SELECT * FROM {POSTGRES_TABLE}'
 def load_data_csv(filepath):
     """Load data from CSV"""
     df = pd.read_csv(filepath)
+    df.columns = df.columns.str.lower()
     return df
 
 def load_data_postgres(host, port, database, user, password, query):
     """Load data from PostgreSQL"""
     from sqlalchemy import create_engine
-    engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{database}')
+    from urllib.parse import quote
+    encoded_password = quote(password, safe='')
+    engine = create_engine(f'postgresql://{user}:{encoded_password}@{host}:{port}/{database}')
     df = pd.read_sql(query, engine)
     engine.dispose()
+    df.columns = df.columns.str.lower()
     return df
 
 print("=" * 80)
@@ -104,12 +113,12 @@ print("STEP 2: DATA VALIDATION")
 print("=" * 80)
 
 # Check target variable exists
-if 'deathFlag' not in df_raw.columns:
-    raise ValueError("Target column 'deathFlag' not found in dataset")
+if 'deathflag' not in df_raw.columns:
+    raise ValueError("Target column 'deathflag' not found in dataset")
 
 print(f"\nTarget variable (deathFlag) distribution:")
-print(df_raw['deathFlag'].value_counts())
-print(f"Class balance: {df_raw['deathFlag'].value_counts(normalize=True).to_dict()}")
+print(df_raw['deathflag'].value_counts())
+print(f"Class balance: {df_raw['deathflag'].value_counts(normalize=True).to_dict()}")
 
 # Missing values before imputation
 print(f"\nMissing values before preprocessing:")
@@ -130,8 +139,8 @@ print("=" * 80)
 df = df_raw.copy()
 
 # Separate target from features
-y = df['deathFlag'].astype(int)
-X = df.drop('deathFlag', axis=1)
+y = df['deathflag'].astype(int)
+X = df.drop('deathflag', axis=1)
 
 print(f"\nTarget variable shape: {y.shape}")
 print(f"Features shape: {X.shape}")

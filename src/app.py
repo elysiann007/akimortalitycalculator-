@@ -7,7 +7,13 @@ import warnings
 warnings.filterwarnings('ignore')
 
 import sys
+import io
 from pathlib import Path
+
+# Fix Windows console Unicode encoding
+if sys.stdout.encoding and sys.stdout.encoding.lower() != 'utf-8':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / 'src'))
@@ -217,7 +223,8 @@ def main():
     # ========================================================================
     print("\n[11/11] PIPELINE COMPLETE")
     print("=" * 80)
-    print(f"\nDataset: {DATA_FILE}")
+    data_source = f"PostgreSQL: {POSTGRES_HOST}/{POSTGRES_DATABASE}/{POSTGRES_TABLE}" if USE_POSTGRES else str(DATA_FILE)
+    print(f"\nDataset: {data_source}")
     print(f"Training samples: {X_train.shape[0]} (deathFlag={y_train.sum()})")
     print(f"Test samples: {X_test.shape[0]} (deathFlag={y_test.sum()})")
     print(f"Number of features: {X_train.shape[1]}")

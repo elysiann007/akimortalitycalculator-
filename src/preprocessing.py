@@ -65,7 +65,7 @@ def ensure_numeric(X: pd.DataFrame) -> pd.DataFrame:
 
 def prepare_features_and_target(
     df: pd.DataFrame,
-    target_column: str = 'deathFlag',
+    target_column: str = 'deathflag',
     id_columns: List[str] = None
 ) -> Tuple[pd.DataFrame, pd.Series]:
     """
@@ -128,7 +128,7 @@ def impute_missing_values(
     method: str = 'mice',
     random_state: int = 42,
     mice_iterations: int = 5
-) -> Tuple[pd.DataFrame, pd.DataFrame, Optional]:
+) -> Tuple[pd.DataFrame, pd.DataFrame, object]:
     """
     Impute missing values - fit on train, apply to test
     
@@ -228,7 +228,7 @@ def save_preprocessing_objects(
         joblib.dump(scaler, output_dir / "scaler.pkl")
         print(f"Scaler saved: {output_dir / 'scaler.pkl'}")
 
-def load_preprocessing_objects(input_dir: Path) -> Tuple[Optional, Optional]:
+def load_preprocessing_objects(input_dir: Path) -> Tuple[object, object]:
     """Load preprocessing objects from disk"""
     input_dir = Path(input_dir)
     

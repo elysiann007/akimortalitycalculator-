@@ -1,6 +1,5 @@
 """
-Streamlit app for AKI Mortality Prediction
-Research-use only mortality risk predictor
+AKI Mortality Risk Calculator — TR/EN
 """
 
 import streamlit as st
@@ -8,317 +7,416 @@ import pandas as pd
 import numpy as np
 import joblib
 from pathlib import Path
-import sys
+import sys, io
+
+if sys.stdout.encoding and sys.stdout.encoding.lower() != 'utf-8':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 sys.path.insert(0, str(Path(__file__).parent / 'src'))
-from config import MODELS_DIR, RANDOM_STATE
+from config import MODELS_DIR
 
-# Page configuration
 st.set_page_config(
-    page_title="AKI Mortality Risk Predictor",
-    page_icon=None,
+    page_title="AKI Mortalite Risk Hesaplayicisi",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# Custom CSS
 st.markdown("""
-    <style>
-    .main { max-width: 1200px; }
-    .header { text-align: center; padding: 20px 0; }
-    .warning-box { background-color: #0066cc; padding: 15px; border-radius: 5px; border-left: 4px solid #003d99; color: white; }
-    .result-box { padding: 15px; border-radius: 5px; }
-    .high-risk { background-color: #dc3545; border-left: 4px solid #8b0000; color: white; }
-    .moderate-risk { background-color: #ff8c00; border-left: 4px solid #cc6600; color: white; }
-    .low-risk { background-color: #28a745; border-left: 4px solid #1a6d2f; color: white; }
-    </style>
+<style>
+/* ── Hide chrome ── */
+#MainMenu, footer, [data-testid="stToolbar"],
+[data-testid="stDecoration"], [data-testid="stSidebar"] { display:none !important; }
+
+/* ── Navbar ── */
+.navbar {
+    background: #003087;
+    color: #fff;
+    padding: 0 32px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 8px;
+    margin-bottom: 0;
+}
+.navbar-brand { font-size: 0.95rem; font-weight: 700; color: #fff; }
+.navbar-tag {
+    background: rgba(255,255,255,0.18);
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.4px;
+}
+
+/* ── Hero ── */
+.hero {
+    background: linear-gradient(135deg, #003f8a 0%, #0062cc 100%);
+    padding: 26px 32px 22px;
+    margin-bottom: 20px;
+}
+.hero h1 { margin: 0 0 5px; font-size: 1.55rem; font-weight: 700; color: #fff; line-height: 1.25; }
+.hero p  { margin: 0; font-size: 0.83rem; color: rgba(255,255,255,0.80); }
+
+/* ── Disclaimer ── */
+.disclaimer {
+    background: #fff8e1;
+    border-left: 4px solid #f59e0b;
+    border-radius: 0 6px 6px 0;
+    padding: 10px 16px;
+    font-size: 0.81rem;
+    color: #7c4b00;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+/* ── Cards ── */
+.section-card {
+    background: #ffffff;
+    border-radius: 10px;
+    border: 1px solid #dde3ed;
+    padding: 22px 26px 18px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+}
+.card-header {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.9px;
+    color: #003087;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #edf0f7;
+}
+
+/* ── Info table rows ── */
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.84rem;
+}
+.info-key { color: #64748b; font-weight: 500; }
+.info-val { color: #1a2540; font-weight: 700; }
+
+/* ── Metric boxes ── */
+.metric-row { display: flex; gap: 14px; margin-bottom: 18px; }
+.metric-card {
+    flex: 1;
+    background: #f8fafc;
+    border: 1px solid #dde3ed;
+    border-radius: 8px;
+    padding: 16px 12px;
+    text-align: center;
+}
+.m-label { font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+.m-value { font-size: 1.9rem; font-weight: 700; line-height: 1; }
+
+/* ── Badge ── */
+.risk-badge {
+    display: inline-block;
+    padding: 5px 16px;
+    border-radius: 20px;
+    font-size: 0.77rem;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    margin: 10px 0 6px;
+}
+.badge-high     { background:#fee2e2; color:#b91c1c; }
+.badge-moderate { background:#fef3c7; color:#b45309; }
+.badge-low      { background:#dcfce7; color:#15803d; }
+
+/* ── Progress bar ── */
+.progress-wrap { margin: 14px 0 6px; }
+.progress-label { display:flex; justify-content:space-between; font-size:0.72rem; color:#94a3b8; margin-bottom:5px; }
+.progress-bar-bg { background:#e2e8f0; border-radius:8px; height:10px; overflow:hidden; }
+.progress-bar-fill { height:100%; border-radius:8px; }
+
+/* ── Result message ── */
+.result-msg { font-size: 0.84rem; color: #374151; margin-top: 12px; line-height: 1.6; }
+
+/* ── Language radio as pills ── */
+[data-testid="stRadio"] > div        { flex-direction: row !important; gap: 8px !important; }
+[data-testid="stRadio"] > div > label {
+    background: #eef2fb;
+    border: 1.5px solid #c5d0e8;
+    border-radius: 6px;
+    padding: 4px 16px;
+    font-size: 0.83rem;
+    font-weight: 600;
+    color: #3a5080 !important;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+[data-testid="stRadio"] > div > label:has(input:checked) {
+    background: #003087;
+    border-color: #003087;
+    color: #ffffff !important;
+}
+[data-testid="stRadio"] > div > label > div:first-child { display: none !important; }
+
+/* ── Primary button ── */
+.stButton > button {
+    background: #003087 !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 7px !important;
+    font-weight: 600 !important;
+    font-size: 0.93rem !important;
+    padding: 11px 0 !important;
+    box-shadow: 0 2px 8px rgba(0,48,135,0.22);
+    transition: background 0.15s;
+}
+.stButton > button:hover { background: #0050b3 !important; }
+</style>
 """, unsafe_allow_html=True)
+
+# ── Translations ────────────────────────────────────────────────────────────────
+LANG = {
+    'TR': {
+        'title':         'Akut Böbrek Hasarı Mortalite Risk Hesaplayıcısı',
+        'subtitle':      'DEU Hastanesi • Retrospektif AKI Kohortu • Yalnızca Araştırma Amaçlıdır',
+        'disclaimer':    'Bu araç yalnızca araştırma amaçlı olup klinik karar vermede kullanılmamalıdır. Tüm tahminler uzman klinisyen görüşü ile değerlendirilmelidir.',
+        'patient_data':  'Hasta Parametreleri',
+        'top5':          'En Önemli 5 Klinik Gösterge',
+        'predict_btn':   'Mortalite Riskini Hesapla',
+        'result_title':  'Tahmin Sonucu',
+        'mortality_prob':'Mortalite Olasılığı',
+        'survival_prob': 'Sağkalım Olasılığı',
+        'risk_class':    'Risk Sınıfı',
+        'high':          'YÜKSEK RİSK',
+        'moderate':      'ORTA RİSK',
+        'low':           'DÜŞÜK RİSK',
+        'high_msg':      'Hasta yüksek AKI mortalite riski taşımaktadır. Acil klinik değerlendirme önerilmektedir.',
+        'moderate_msg':  'Hasta orta düzeyde AKI mortalite riski taşımaktadır. Yakın klinik izlem önerilmektedir.',
+        'low_msg':       'Hasta düşük AKI mortalite riski taşımaktadır. Rutin klinik izlem sürdürülmelidir.',
+        'model_bilgi':   'Model Bilgisi',
+        'algorithm':     'Algoritma',
+        'dataset':       'Eğitim Verisi',
+        'n_patients':    '2.230 hasta',
+        'no_model':      'Model dosyaları bulunamadı. Lütfen önce eğitim pipeline\'ını çalıştırın.',
+        'run_hint':      'python src/app.py komutunu çalıştırın.',
+        'err':           'Tahmin hatası',
+        'risk_label':    'Risk Skoru',
+        'fields': {
+            'kreatinin':     ('Kreatinin (mg/dL)',      0.1, 15.0, 0.1, 1.0),
+            'wbc':           ('Lökosit (10³/µL)',       0.0, 50.0, 0.1, 10.0),
+            'plt':           ('Platelet Sayısı (10³/µL)', 10, 500,  1,   200),
+            'totalbilirubin':('Total Bilirubin (mg/dL)', 0.0, 20.0, 0.1, 0.8),
+            'age':           ('Yaş',                    18,  120,  1,   65),
+        },
+    },
+    'EN': {
+        'title':         'Acute Kidney Injury Mortality Risk Calculator',
+        'subtitle':      'DEU Hospital • Retrospective AKI Cohort • For Research Use Only',
+        'disclaimer':    'This tool is for research purposes only and must not be used for clinical decision-making. All predictions must be reviewed by a qualified clinician.',
+        'patient_data':  'Patient Parameters',
+        'top5':          'Top 5 Clinical Predictors',
+        'predict_btn':   'Calculate Mortality Risk',
+        'result_title':  'Prediction Result',
+        'mortality_prob':'Mortality Probability',
+        'survival_prob': 'Survival Probability',
+        'risk_class':    'Risk Class',
+        'high':          'HIGH RISK',
+        'moderate':      'MODERATE RISK',
+        'low':           'LOW RISK',
+        'high_msg':      'Patient has a high estimated AKI mortality risk. Urgent clinical evaluation is recommended.',
+        'moderate_msg':  'Patient has a moderate estimated AKI mortality risk. Close clinical monitoring is recommended.',
+        'low_msg':       'Patient has a low estimated AKI mortality risk. Routine clinical follow-up should continue.',
+        'model_bilgi':   'Model Information',
+        'algorithm':     'Algorithm',
+        'dataset':       'Training Data',
+        'n_patients':    '2,230 patients',
+        'no_model':      'Model files not found. Please run the training pipeline first.',
+        'run_hint':      'Run python src/app.py from the project root.',
+        'err':           'Prediction error',
+        'risk_label':    'Risk Score',
+        'fields': {
+            'kreatinin':     ('Creatinine (mg/dL)',      0.1, 15.0, 0.1, 1.0),
+            'wbc':           ('WBC (10³/µL)',            0.0, 50.0, 0.1, 10.0),
+            'plt':           ('Platelet Count (10³/µL)', 10,  500,  1,   200),
+            'totalbilirubin':('Total Bilirubin (mg/dL)', 0.0, 20.0, 0.1, 0.8),
+            'age':           ('Age (years)',              18,  120,  1,   65),
+        },
+    },
+}
+
+FEATURES = ['kreatinin', 'wbc', 'plt', 'totalbilirubin', 'age']
 
 @st.cache_resource
 def load_model_and_preprocessors():
-    """Load best model and preprocessing objects"""
     try:
-        # Load Logistic Regression model for web page
         model_path = MODELS_DIR / "logistic_regression.pkl"
         if not model_path.exists():
-            # Fall back to best available model
-            available_models = list(MODELS_DIR.glob("*.pkl"))
-            if not available_models:
-                return None, None, None, None
-            model_path = available_models[0]
-        
+            available = list(MODELS_DIR.glob("*.pkl"))
+            if not available:
+                return None, None
+            model_path = available[0]
         model = joblib.load(model_path)
-        
-        # Fix sklearn version compatibility (1.8.0 removed multi_class, 1.6.1 needs it)
         if hasattr(model, '__class__') and model.__class__.__name__ == 'LogisticRegression':
             if not hasattr(model, 'multi_class'):
                 model.multi_class = 'auto'
-        
-        # Load scaler
         scaler = None
-        scaler_path = MODELS_DIR / "scaler.pkl"
-        if scaler_path.exists():
-            scaler = joblib.load(scaler_path)
-        
-        # Load imputer
-        imputer = None
-        imputer_path = MODELS_DIR / "imputer.pkl"
-        if imputer_path.exists():
-            imputer = joblib.load(imputer_path)
-        
-        # Load feature names from metrics
-        feature_names = None
-        metrics_path = MODELS_DIR.parent / "tables" / "model_metrics.csv"
-        
-        return model, scaler, imputer, feature_names
+        sp = MODELS_DIR / "scaler.pkl"
+        if sp.exists():
+            scaler = joblib.load(sp)
+        return model, scaler
     except Exception as e:
-        st.error(f"Error loading model: {e}")
-        return None, None, None, None
+        st.error(f"Model load error: {e}")
+        return None, None
 
-@st.cache_data
-def load_top_features():
-    """Load top 5 LR features for web page"""
-    # Top 5 Logistic Regression features (excluding kreatininlastvalue)
-    return ['kreatinin', 'wbc', 'plt', 'totalbilirubin', 'age']
-
-def get_feature_input_info():
+def progress_bar_html(prob, color):
+    pct = prob * 100
+    return f"""
+    <div class="progress-wrap">
+        <div class="progress-label"><span>0%</span><span>{pct:.1f}%</span><span>100%</span></div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" style="width:{pct:.1f}%; background:{color};"></div>
+        </div>
+    </div>
     """
-    Get information about available features - TOP 5 FOR WEB PAGE
-    Returns a template with reasonable ranges based on typical AKI data
-    """
-    # Top 5 Logistic Regression features only
-    features_info = {
-        'kreatinin': {'type': 'number', 'min': 0.1, 'max': 15.0, 'step': 0.1, 'default': 1.0, 'description': 'Serum Creatinine (mg/dL)', 'label': 'Creatinine'},
-        'wbc': {'type': 'number', 'min': 0.0, 'max': 50.0, 'step': 0.1, 'default': 10.0, 'description': 'White Blood Cells (10³/µL)', 'label': 'WBC'},
-        'plt': {'type': 'number', 'min': 10, 'max': 500, 'step': 1, 'default': 200, 'description': 'Platelets (10³/µL)', 'label': 'PLT'},
-        'totalbilirubin': {'type': 'number', 'min': 0.0, 'max': 20.0, 'step': 0.1, 'default': 0.8, 'description': 'Total Bilirubin (mg/dL)', 'label': 'Total Bilirubin'},
-        'age': {'type': 'number', 'min': 18, 'max': 120, 'step': 1, 'default': 65, 'description': 'Patient Age (years)', 'label': 'Age'},
-    }
-    return features_info
 
 def main():
-    # Header
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        st.markdown("<div class='header'><h1>AKI Mortality Risk Predictor</h1></div>", unsafe_allow_html=True)
-    
-    # Load model
-    model, scaler, imputer, _ = load_model_and_preprocessors()
-    
+    model, scaler = load_model_and_preprocessors()
+
+    # ── Top bar ──────────────────────────────────────────────────────────────
+    top_l, top_r = st.columns([3, 1])
+    with top_l:
+        st.markdown("""
+        <div class="navbar">
+            <span class="navbar-brand">DEU Hospital — Clinical Research Platform</span>
+            <span class="navbar-tag">Research Use Only</span>
+        </div>
+        """, unsafe_allow_html=True)
+    with top_r:
+        lang = st.radio("", ["TR", "EN"], horizontal=True, label_visibility="collapsed")
+
+    T = LANG[lang]
+
+    # ── Hero ─────────────────────────────────────────────────────────────────
+    st.markdown(f"""
+    <div class="hero">
+        <h1>{T['title']}</h1>
+        <p>{T['subtitle']}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── Disclaimer ───────────────────────────────────────────────────────────
+    st.markdown(f"<div class='disclaimer'><b>Uyari / Notice:</b> {T['disclaimer']}</div>",
+                unsafe_allow_html=True)
+
     if model is None:
-        st.error("❌ Model files not found. Please run the training pipeline first.")
-        st.info("Run `python src/app.py` from the project root to train the model.")
+        st.error(T['no_model'])
+        st.info(T['run_hint'])
         return
-    
-    # Load top features
-    top_features = load_top_features()
-    
-    # Sidebar - Model info
-    with st.sidebar:
-        st.markdown("### Model Information")
-        st.info(f"""
-        - **Model Type**: Logistic Regression
-        - **Target**: AKI Mortality
-        - **Training Data**: DEU Hospital AKI Dataset
-        - **Model Status**: Production-Ready
-        """)
-    
-    # Main interface
-    st.markdown("### Patient Data Input - Top 5 Predictors")
-    
-    # Get feature info template
-    features_info = get_feature_input_info()
-    
-    # Create input fields
-    input_data = {}
-    
-    # Organize inputs in columns
-    if top_features:
-        st.markdown(f"**Top 5 Predictive Features** (recommended inputs):")
-        
-        # Create multiple columns for organized layout
-        cols = st.columns(3)
-        col_idx = 0
-        
-        for feature in top_features:
-            # Normalize feature name for matching
-            feature_lower = feature.lower().strip()
-            
-            # Find matching info
-            feature_config = features_info.get(feature_lower, {
-                'type': 'number',
-                'min': 0,
-                'max': 1000,
-                'step': 1,
-                'default': 0,
-                'description': feature
-            })
-            
-            with cols[col_idx % 3]:
-                if feature_config['type'] == 'number':
-                    display_label = feature_config.get('label', feature)
-                    input_data[feature_lower] = st.number_input(
-                        display_label,
-                        min_value=feature_config['min'],
-                        max_value=feature_config['max'],
-                        value=feature_config['default'],
-                        step=feature_config['step'],
-                        help=feature_config['description']
-                    )
-            
-            col_idx += 1
-    else:
-        st.markdown("**Enter Patient Features**:")
-        
-        common_features = ['age', 'hr', 'sbp', 'dbp', 'rr', 'spo2', 'temp', 'glucose', 'wbc', 'hgb', 'plt', 'cr']
-        
-        cols = st.columns(3)
-        col_idx = 0
-        
-        for feature in common_features:
-            feature_config = features_info[feature]
-            
-            with cols[col_idx % 3]:
-                input_data[feature] = st.number_input(
-                    feature.upper(),
-                    min_value=feature_config['min'],
-                    max_value=feature_config['max'],
-                    value=feature_config['default'],
-                    step=feature_config['step'],
-                    help=feature_config['description']
+
+    # ── Two-column layout ────────────────────────────────────────────────────
+    left, right = st.columns([3, 2], gap="large")
+
+    # ── LEFT: Inputs ─────────────────────────────────────────────────────────
+    with left:
+        st.markdown(f"""
+        <div class="section-card">
+            <div class="card-header">{T['patient_data']} — {T['top5']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        input_data = {}
+        r1c1, r1c2, r1c3 = st.columns(3)
+        r2c1, r2c2, _ = st.columns(3)
+
+        pairs = [(FEATURES[i], col) for i, col in enumerate([r1c1, r1c2, r1c3, r2c1, r2c2])]
+        for feat, col in pairs:
+            lbl, mn, mx, step, default = T['fields'][feat]
+            with col:
+                input_data[feat] = st.number_input(
+                    lbl,
+                    min_value=float(mn), max_value=float(mx),
+                    value=float(default), step=float(step)
                 )
-            
-            col_idx += 1
-    
-    # Prediction button
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        predict_button = st.button("🔮 Predict Mortality Risk", use_container_width=True, type="primary")
-    
-    # Prediction logic
-    if predict_button:
-        try:
-            # Top 5 features for Logistic Regression - Direct mapping (database names match)
-            feature_mapping = {
-                'kreatinin': 'kreatinin',
-                'wbc': 'wbc',
-                'plt': 'plt',
-                'totalbilirubin': 'totalbilirubin',
-                'age': 'age',
-            }
-            
-            # Create mapping dict with actual database column names
-            mapped_data = {}
-            for user_field, db_column in feature_mapping.items():
-                if user_field in input_data:
-                    mapped_data[db_column] = input_data[user_field]
-            
-            # Convert to DataFrame and ensure proper columns
-            input_df = pd.DataFrame([mapped_data])
-            
-            # Get the expected columns from the model (if available through scaler)
-            if scaler is not None and hasattr(scaler, 'feature_names_in_'):
-                expected_cols = list(scaler.feature_names_in_)
-                # Fill missing features with training mean so they scale to 0 (neutral)
-                fill_values = dict(zip(expected_cols, scaler.mean_))
-                input_df = input_df.reindex(columns=expected_cols)
-                for col in expected_cols:
-                    if col not in mapped_data:
-                        input_df[col] = fill_values[col]
-            
-            # Apply scaling if available
-            if scaler is not None:
-                try:
-                    input_scaled = scaler.transform(input_df)
-                    X_input = pd.DataFrame(input_scaled, columns=input_df.columns)
-                except Exception as scale_err:
-                    st.warning(f"Scaling issue: {scale_err}. Using unscaled data.")
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        predict = st.button(T['predict_btn'], type="primary", use_container_width=True)
+
+    # ── RIGHT: Model info + result ────────────────────────────────────────────
+    with right:
+        st.markdown(f"""
+        <div class="section-card">
+            <div class="card-header">{T['model_bilgi']}</div>
+            <div class="info-row"><span class="info-key">{T['algorithm']}</span><span class="info-val">Logistic Regression</span></div>
+            <div class="info-row"><span class="info-key">{T['dataset']}</span><span class="info-val">{T['n_patients']}</span></div>
+            <div class="info-row"><span class="info-key">AUC</span><span class="info-val">0.865</span></div>
+            <div class="info-row"><span class="info-key">Accuracy</span><span class="info-val">82.1%</span></div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        if predict:
+            try:
+                input_df = pd.DataFrame([input_data])
+
+                if scaler is not None and hasattr(scaler, 'feature_names_in_'):
+                    exp = list(scaler.feature_names_in_)
+                    fills = dict(zip(exp, scaler.mean_))
+                    input_df = input_df.reindex(columns=exp)
+                    for c in exp:
+                        if c not in input_data:
+                            input_df[c] = fills[c]
+                    try:
+                        X_input = pd.DataFrame(scaler.transform(input_df), columns=exp)
+                    except Exception:
+                        X_input = input_df
+                else:
                     X_input = input_df
-            else:
-                X_input = input_df
-            
-            # Get prediction
-            y_pred_proba = model.predict_proba(X_input)[0]
-            y_pred = model.predict(X_input)[0]
-            
-            mortality_prob = y_pred_proba[1]
-            
-            # Display results
-            st.markdown("---")
-            st.markdown("### Prediction Results")
-            
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                st.metric(
-                    "Mortality Probability",
-                    f"{mortality_prob*100:.1f}%",
-                    delta=None
-                )
-            
-            with col2:
-                predicted_class = "HIGH RISK" if mortality_prob >= 0.5 else "LOW RISK"
-                risk_color = "#dc3545" if mortality_prob >= 0.5 else "#28a745"
-                st.metric("Predicted Class", predicted_class)
-            
-            with col3:
-                st.metric(
-                    "Survival Probability",
-                    f"{(1-mortality_prob)*100:.1f}%",
-                    delta=None
-                )
-            
-            # Detailed result box
-            if mortality_prob >= 0.7:
-                risk_level = "HIGH"
-                css_class = "high-risk"
-                icon = "🔴"
-            elif mortality_prob >= 0.4:
-                risk_level = "MODERATE"
-                css_class = "moderate-risk"
-                icon = "🟡"
-            else:
-                risk_level = "LOW"
-                css_class = "low-risk"
-                icon = "🟢"
-            
-            st.markdown(f"""
-            <div class='result-box {css_class}'>
-                <h4>{icon} Risk Level: {risk_level}</h4>
-                <p><strong>Mortality Risk:</strong> {mortality_prob*100:.1f}%</p>
-                <p><strong>Interpretation:</strong> This patient has a {risk_level.lower()} estimated risk of AKI mortality 
-                based on the predictive model trained on the DEU hospital dataset.</p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Additional info
-            with st.expander("ℹ️ Model Information & Disclaimers"):
-                st.markdown("""
-                **Model Details:**
-                - Algorithm: Logistic Regression (Simplified for Web)
-                - Top 5 Features: Creatinine, WBC, Platelets, Bilirubin, Age
-                - Training Dataset: DEU Hospital AKI Retrospective Data (2,230 patients)
-                - Performance: AUC = 0.857, Accuracy = 81.2%
-                - Validation: Stratified train-test split with proper cross-validation
-                
-                **Important Notes:**
-                1. This model is for research purposes only
-                2. Predictions should NOT replace clinical judgment
-                3. Model performance may vary in different populations
-                4. Always verify predictions with clinical experts
-                5. Ensure all input values are accurate before interpretation
-                
-                **Limitations:**
-                - Model trained on specific hospital population (DEU Hospital)
-                - May not generalize to all patient populations
-                - Uses only 5 most important features (simplified version)
-                - Missing important contextual clinical information
-                - Should be used as supplementary tool only
-                """)
-            
-        except Exception as e:
-            st.error(f"❌ Prediction error: {str(e)}")
-            st.info("Please ensure all input values are valid and within expected ranges.")
+
+                mp = model.predict_proba(X_input)[0][1]
+
+                if mp >= 0.7:
+                    risk_key  = 'high'
+                    bar_color = '#ef4444'
+                    badge_cls = 'badge-high'
+                    card_bg   = '#fff1f2'
+                    border_c  = '#fca5a5'
+                elif mp >= 0.4:
+                    risk_key  = 'moderate'
+                    bar_color = '#f59e0b'
+                    badge_cls = 'badge-moderate'
+                    card_bg   = '#fffbeb'
+                    border_c  = '#fcd34d'
+                else:
+                    risk_key  = 'low'
+                    bar_color = '#22c55e'
+                    badge_cls = 'badge-low'
+                    card_bg   = '#f0fdf4'
+                    border_c  = '#86efac'
+
+                st.markdown(f"""
+                <div class="section-card" style="background:{card_bg}; border-color:{border_c};">
+                    <div class="card-header" style="border-color:{border_c};">{T['result_title']}</div>
+                    <div class="metric-row">
+                        <div class="metric-card">
+                            <div class="m-label">{T['mortality_prob']}</div>
+                            <div class="m-value" style="color:{bar_color};">{mp*100:.1f}%</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="m-label">{T['survival_prob']}</div>
+                            <div class="m-value" style="color:#22c55e;">{(1-mp)*100:.1f}%</div>
+                        </div>
+                    </div>
+                    <div style="text-align:center;">
+                        <span class="risk-badge {badge_cls}">{T[risk_key]}</span>
+                    </div>
+                    {progress_bar_html(mp, bar_color)}
+                    <p style="font-size:0.85rem; color:#374151; margin-top:14px; line-height:1.6;">
+                        {T[risk_key + '_msg']}
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+
+            except Exception as e:
+                st.error(f"{T['err']}: {e}")
 
 if __name__ == "__main__":
     main()
