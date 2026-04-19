@@ -391,28 +391,27 @@ def main():
                     card_bg   = '#f0fdf4'
                     border_c  = '#86efac'
 
-                st.markdown(f"""
-                <div class="section-card" style="background:{card_bg}; border-color:{border_c};">
-                    <div class="card-header" style="border-color:{border_c};">{T['result_title']}</div>
-                    <div class="metric-row">
-                        <div class="metric-card">
-                            <div class="m-label">{T['mortality_prob']}</div>
-                            <div class="m-value" style="color:{bar_color};">{mp*100:.1f}%</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="m-label">{T['survival_prob']}</div>
-                            <div class="m-value" style="color:#22c55e;">{(1-mp)*100:.1f}%</div>
-                        </div>
-                    </div>
-                    <div style="text-align:center;">
-                        <span class="risk-badge {badge_cls}">{T[risk_key]}</span>
-                    </div>
-                    {progress_bar_html(mp, bar_color)}
-                    <p style="font-size:0.85rem; color:#374151; margin-top:14px; line-height:1.6;">
-                        {T[risk_key + '_msg']}
-                    </p>
-                </div>
-                """, unsafe_allow_html=True)
+                pct = mp * 100
+                result_html = (
+                    f'<div class="section-card" style="background:{card_bg}; border-color:{border_c};">'
+                    f'<div class="card-header" style="border-color:{border_c};">{T["result_title"]}</div>'
+                    f'<div class="metric-row">'
+                    f'<div class="metric-card"><div class="m-label">{T["mortality_prob"]}</div>'
+                    f'<div class="m-value" style="color:{bar_color};">{pct:.1f}%</div></div>'
+                    f'<div class="metric-card"><div class="m-label">{T["survival_prob"]}</div>'
+                    f'<div class="m-value" style="color:#22c55e;">{100-pct:.1f}%</div></div>'
+                    f'</div>'
+                    f'<div style="text-align:center;"><span class="risk-badge {badge_cls}">{T[risk_key]}</span></div>'
+                    f'<div class="progress-wrap">'
+                    f'<div class="progress-label"><span>0%</span><span>{pct:.1f}%</span><span>100%</span></div>'
+                    f'<div class="progress-bar-bg">'
+                    f'<div class="progress-bar-fill" style="width:{pct:.1f}%; background:{bar_color};"></div>'
+                    f'</div></div>'
+                    f'<p style="font-size:0.85rem; color:#374151; margin-top:14px; line-height:1.6;">'
+                    f'{T[risk_key + "_msg"]}</p>'
+                    f'</div>'
+                )
+                st.markdown(result_html, unsafe_allow_html=True)
 
             except Exception as e:
                 st.error(f"{T['err']}: {e}")
