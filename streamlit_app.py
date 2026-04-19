@@ -346,7 +346,6 @@ def main():
         st.markdown(f"""
         <div class="section-card">
             <div class="card-header">{T['model_bilgi']}</div>
-            <div class="info-row"><span class="info-key">{T['algorithm']}</span><span class="info-val">Logistic Regression</span></div>
             <div class="info-row"><span class="info-key">{T['dataset']}</span><span class="info-val">{T['n_patients']}</span></div>
             <div class="info-row"><span class="info-key">AUC</span><span class="info-val">0.865</span></div>
             <div class="info-row"><span class="info-key">Accuracy</span><span class="info-val">82.1%</span></div>
