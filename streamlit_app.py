@@ -405,11 +405,11 @@ def main():
             <div class="section-card" style="margin-top:0;">
                 <div class="card-header">{T['top5']}</div>
                 <div class="feat-list">
-                    <div class="feat-row"><span class="feat-rank">1</span><span class="feat-name">{T['f1']}</span><span class="feat-tag">{T['f1_tag']}</span></div>
-                    <div class="feat-row"><span class="feat-rank">2</span><span class="feat-name">{T['f2']}</span><span class="feat-tag">{T['f2_tag']}</span></div>
-                    <div class="feat-row"><span class="feat-rank">3</span><span class="feat-name">{T['f3']}</span><span class="feat-tag">{T['f3_tag']}</span></div>
-                    <div class="feat-row"><span class="feat-rank">4</span><span class="feat-name">{T['f4']}</span><span class="feat-tag">{T['f4_tag']}</span></div>
-                    <div class="feat-row"><span class="feat-rank">5</span><span class="feat-name">{T['f5']}</span><span class="feat-tag">{T['f5_tag']}</span></div>
+                    <div class="feat-row"><span class="feat-rank">1</span><span class="feat-name">{T['f1']}</span></div>
+                    <div class="feat-row"><span class="feat-rank">2</span><span class="feat-name">{T['f2']}</span></div>
+                    <div class="feat-row"><span class="feat-rank">3</span><span class="feat-name">{T['f3']}</span></div>
+                    <div class="feat-row"><span class="feat-rank">4</span><span class="feat-name">{T['f4']}</span></div>
+                    <div class="feat-row"><span class="feat-rank">5</span><span class="feat-name">{T['f5']}</span></div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
