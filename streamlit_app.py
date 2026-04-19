@@ -138,6 +138,34 @@ st.markdown("""
 /* ── Result message ── */
 .result-msg { font-size: 0.84rem; color: #374151; margin-top: 12px; line-height: 1.6; }
 
+/* ── Step list ── */
+.step-list { display:flex; flex-direction:column; gap:12px; margin-top:4px; }
+.step-item { display:flex; align-items:flex-start; gap:12px; font-size:0.84rem; color:#374151; }
+.step-num {
+    min-width:26px; height:26px; background:#003087; color:#fff;
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:0.75rem; font-weight:700; flex-shrink:0;
+}
+
+/* ── Feature list ── */
+.feat-list { display:flex; flex-direction:column; gap:0; }
+.feat-row {
+    display:flex; align-items:center; gap:10px;
+    padding:9px 0; border-bottom:1px solid #f1f5f9;
+    font-size:0.83rem;
+}
+.feat-row:last-child { border-bottom:none; }
+.feat-rank {
+    min-width:22px; height:22px; background:#e8eef8; color:#003087;
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:0.72rem; font-weight:700; flex-shrink:0;
+}
+.feat-name { flex:1; color:#1a2540; font-weight:600; }
+.feat-tag {
+    background:#eef2fb; color:#3a5080; border-radius:12px;
+    padding:2px 10px; font-size:0.70rem; font-weight:600; white-space:nowrap;
+}
+
 /* ── Language radio as pills ── */
 [data-testid="stRadio"] > div        { flex-direction: row !important; gap: 8px !important; }
 [data-testid="stRadio"] > div > label {
@@ -202,6 +230,16 @@ LANG = {
         'run_hint':      'python src/app.py komutunu çalıştırın.',
         'err':           'Tahmin hatası',
         'risk_label':    'Risk Skoru',
+        'input_hint':    'Aşağıdaki klinik değerleri giriniz.',
+        'how_title':     'Nasıl Kullanılır?',
+        'step1':         'Sol paneldeki klinik laboratuvar değerlerini girin.',
+        'step2':         '"Mortalite Riskini Hesapla" butonuna basın.',
+        'step3':         'Tahmin sonucu ve risk sınıfı burada görünecektir.',
+        'f1': 'Lökosit (WBC)',    'f1_tag': 'Enflamasyon',
+        'f2': 'Kreatinin',        'f2_tag': 'Böbrek Fonksiyonu',
+        'f3': 'Platelet',         'f3_tag': 'Koagülasyon',
+        'f4': 'Total Bilirubin',  'f4_tag': 'Karaciğer Fonksiyonu',
+        'f5': 'Yaş',              'f5_tag': 'Demografik Risk',
         'fields': {
             'kreatinin':     ('Kreatinin (mg/dL)',      0.1, 15.0, 0.1, 1.0),
             'wbc':           ('Lökosit (10³/µL)',       0.0, 50.0, 0.1, 10.0),
@@ -236,6 +274,16 @@ LANG = {
         'run_hint':      'Run python src/app.py from the project root.',
         'err':           'Prediction error',
         'risk_label':    'Risk Score',
+        'input_hint':    'Enter the clinical laboratory values below.',
+        'how_title':     'How to Use',
+        'step1':         'Enter the clinical laboratory values in the left panel.',
+        'step2':         'Click the "Calculate Mortality Risk" button.',
+        'step3':         'The prediction result and risk class will appear here.',
+        'f1': 'WBC (Leukocytes)',  'f1_tag': 'Inflammation',
+        'f2': 'Creatinine',        'f2_tag': 'Renal Function',
+        'f3': 'Platelet Count',    'f3_tag': 'Coagulation',
+        'f4': 'Total Bilirubin',   'f4_tag': 'Hepatic Function',
+        'f5': 'Age',               'f5_tag': 'Demographic Risk',
         'fields': {
             'kreatinin':     ('Creatinine (mg/dL)',      0.1, 15.0, 0.1, 1.0),
             'wbc':           ('WBC (10³/µL)',            0.0, 50.0, 0.1, 10.0),
@@ -316,22 +364,21 @@ def main():
         return
 
     # ── Two-column layout ────────────────────────────────────────────────────
-    left, right = st.columns([3, 2], gap="large")
+    left, right = st.columns([1, 1], gap="large")
 
     # ── LEFT: Inputs ─────────────────────────────────────────────────────────
     with left:
         st.markdown(f"""
         <div class="section-card">
             <div class="card-header">{T['patient_data']} — {T['top5']}</div>
+            <p style="font-size:0.82rem; color:#64748b; margin:-8px 0 18px;">{T['input_hint']}</p>
         </div>
         """, unsafe_allow_html=True)
 
         input_data = {}
-        r1c1, r1c2, r1c3 = st.columns(3)
-        r2c1, r2c2, _ = st.columns(3)
-
-        pairs = [(FEATURES[i], col) for i, col in enumerate([r1c1, r1c2, r1c3, r2c1, r2c2])]
-        for feat, col in pairs:
+        c1, c2 = st.columns(2)
+        cols_map = [c1, c2, c1, c2, c1]
+        for feat, col in zip(FEATURES, cols_map):
             lbl, mn, mx, step, default = T['fields'][feat]
             with col:
                 input_data[feat] = st.number_input(
@@ -343,9 +390,30 @@ def main():
         st.markdown("<br>", unsafe_allow_html=True)
         predict = st.button(T['predict_btn'], type="primary", use_container_width=True)
 
-    # ── RIGHT: Model info + result ────────────────────────────────────────────
+    # ── RIGHT: Placeholder → Result ───────────────────────────────────────────
     with right:
-        if predict:
+        if not predict:
+            st.markdown(f"""
+            <div class="section-card">
+                <div class="card-header">{T['how_title']}</div>
+                <div class="step-list">
+                    <div class="step-item"><span class="step-num">1</span><span>{T['step1']}</span></div>
+                    <div class="step-item"><span class="step-num">2</span><span>{T['step2']}</span></div>
+                    <div class="step-item"><span class="step-num">3</span><span>{T['step3']}</span></div>
+                </div>
+            </div>
+            <div class="section-card" style="margin-top:0;">
+                <div class="card-header">{T['top5']}</div>
+                <div class="feat-list">
+                    <div class="feat-row"><span class="feat-rank">1</span><span class="feat-name">{T['f1']}</span><span class="feat-tag">{T['f1_tag']}</span></div>
+                    <div class="feat-row"><span class="feat-rank">2</span><span class="feat-name">{T['f2']}</span><span class="feat-tag">{T['f2_tag']}</span></div>
+                    <div class="feat-row"><span class="feat-rank">3</span><span class="feat-name">{T['f3']}</span><span class="feat-tag">{T['f3_tag']}</span></div>
+                    <div class="feat-row"><span class="feat-rank">4</span><span class="feat-name">{T['f4']}</span><span class="feat-tag">{T['f4_tag']}</span></div>
+                    <div class="feat-row"><span class="feat-rank">5</span><span class="feat-name">{T['f5']}</span><span class="feat-tag">{T['f5_tag']}</span></div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
             try:
                 input_df = pd.DataFrame([input_data])
 
