@@ -179,6 +179,7 @@ LANG = {
     'TR': {
         'title':         'Akut Böbrek Hasarı Mortalite Risk Hesaplayıcısı',
         'subtitle':      'DEU Hastanesi • Retrospektif AKI Kohortu • Yalnızca Araştırma Amaçlıdır',
+        'notice_label':  'Uyarı:',
         'disclaimer':    'Bu araç yalnızca araştırma amaçlı olup klinik karar vermede kullanılmamalıdır. Tüm tahminler uzman klinisyen görüşü ile değerlendirilmelidir.',
         'patient_data':  'Hasta Parametreleri',
         'top5':          'En Önemli 5 Klinik Gösterge',
@@ -212,6 +213,7 @@ LANG = {
     'EN': {
         'title':         'Acute Kidney Injury Mortality Risk Calculator',
         'subtitle':      'DEU Hospital • Retrospective AKI Cohort • For Research Use Only',
+        'notice_label':  'Notice:',
         'disclaimer':    'This tool is for research purposes only and must not be used for clinical decision-making. All predictions must be reviewed by a qualified clinician.',
         'patient_data':  'Patient Parameters',
         'top5':          'Top 5 Clinical Predictors',
@@ -305,7 +307,7 @@ def main():
     """, unsafe_allow_html=True)
 
     # ── Disclaimer ───────────────────────────────────────────────────────────
-    st.markdown(f"<div class='disclaimer'><b>Uyari / Notice:</b> {T['disclaimer']}</div>",
+    st.markdown(f"<div class='disclaimer'><b>{T['notice_label']}</b> {T['disclaimer']}</div>",
                 unsafe_allow_html=True)
 
     if model is None:
