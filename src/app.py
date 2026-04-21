@@ -173,8 +173,7 @@ def main():
     roc_data = get_roc_data(predictions, y_test)
     
     plt.figure(figsize=(12, 8))
-    colors = {'Logistic Regression': '#1f77b4', 'Random Forest': '#ff7f0e',
-              'Gradient Boosting': '#2ca02c', 'ANN (MLPClassifier)': '#d62728'}
+    colors = MODEL_COLORS
     
     for model_name, (fpr, tpr, auc_score) in roc_data.items():
         plt.plot(fpr, tpr, lw=2.5, label=f'{model_name} (AUC={auc_score:.3f})',

@@ -33,7 +33,7 @@ POSTGRES_HOST = 'localhost'
 POSTGRES_PORT = 5432
 POSTGRES_DATABASE = 'M3'
 POSTGRES_USER = 'postgres'
-POSTGRES_PASSWORD = '123456'
+POSTGRES_PASSWORD = '93abH@llo810'
 POSTGRES_TABLE = 'deu_retro_clean'
 POSTGRES_QUERY = f'SELECT * FROM {POSTGRES_TABLE}'
 
@@ -78,3 +78,11 @@ SCALING_METHOD = 'standard'  # 'standard' or 'robust'
 # Feature importance parameters
 PERMUTATION_IMPORTANCE_REPEATS = 10
 TOP_N_FEATURES = 15
+
+# Consistent model colors across all plots
+MODEL_COLORS = {
+    'Logistic Regression': '#1f77b4',
+    'Random Forest': '#ff7f0e',
+    'Gradient Boosting': '#2ca02c',
+    'ANN (MLPClassifier)': '#d62728',
+}

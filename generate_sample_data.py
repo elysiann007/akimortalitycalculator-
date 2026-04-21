@@ -47,30 +47,22 @@ def generate_sample_data(n_samples=500, random_state=42):
     # Generate mortality flag with realistic correlations
     # Higher SOFA and APACHE scores increase mortality risk
     mortality_risk = (
-        0.01 * df['age'] +
-        0.001 * df['sofa'] +
-        0.002 * df['apache'] +
-        0.001 * df['cr'] +
-        0.05 * (df['hr'] > 110).astype(int) +
-        0.05 * (df['sbp'] < 90).astype(int) +
-        0.03 * (df['spo2'] < 88).astype(int) +
-        0.02 * (df['wbc'] > 15).astype(int) +
-        0.02 * (df['plt'] < 100).astype(int) +
-        np.random.normal(0, 0.1, n_samples)
+        -2.5 +
+        0.02 * df['age'] +
+        0.08 * df['sofa'] +
+        0.03 * df['apache'] +
+        0.1 * df['cr'] +
+        0.3 * (df['hr'] > 110).astype(int) +
+        0.3 * (df['sbp'] < 90).astype(int) +
+        0.2 * (df['spo2'] < 88).astype(int) +
+        0.1 * (df['wbc'] > 15).astype(int) +
+        0.1 * (df['plt'] < 100).astype(int) +
+        np.random.normal(0, 0.5, n_samples)
     )
     
     mortality_prob = 1 / (1 + np.exp(-mortality_risk))
-    df['deathFlag'] = (mortality_prob > 0.5).astype(int)
-    
-    # Ensure ~30-40% mortality rate for realism
-    mortality_rate = df['deathFlag'].mean()
-    target_rate = 0.35
-    if mortality_rate > target_rate:
-        # Flip some positives to negatives
-        positive_idx = df[df['deathFlag'] == 1].index
-        flip_count = int(len(positive_idx) * (mortality_rate - target_rate) / target_rate)
-        flip_idx = np.random.choice(positive_idx, flip_count, replace=False)
-        df.loc[flip_idx, 'deathFlag'] = 0
+    # Sample deaths using probability (preserves correlations)
+    df['deathFlag'] = np.random.binomial(1, mortality_prob)
     
     # Reorder columns: put deathFlag at end for clarity
     cols = [c for c in df.columns if c != 'deathFlag'] + ['deathFlag']

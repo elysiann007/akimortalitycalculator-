@@ -169,8 +169,8 @@ def plot_feature_importance(
     filtered_importance = all_importance[all_importance['Feature'] != 'kreatininlastvalue']
     
     model_names = filtered_importance['Model'].unique()
-    colors = {'Random Forest': '#1f77b4', 'Gradient Boosting': '#ff7f0e',
-              'Logistic Regression': '#2ca02c', 'ANN (MLPClassifier)': '#d62728'}
+    from config import MODEL_COLORS
+    colors = MODEL_COLORS
     
     for idx, model_name in enumerate(sorted(model_names)):
         model_data = filtered_importance[filtered_importance['Model'] == model_name].nlargest(top_n, 'Importance')
