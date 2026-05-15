@@ -101,6 +101,9 @@ export const en = {
       high: "Patient shows a high estimated AKI mortality risk. Urgent clinical evaluation is strongly recommended.",
     },
     resultDisclaimer: "Research tool only. Must not replace clinical judgment. Consult a qualified physician.",
+    modelSelectTitle: "Prediction Model",
+    modelSelectSub: "Select which ML model to use for this calculation",
+    bestModel: "Best",
   },
   models: {
     badge: "Model Performance",

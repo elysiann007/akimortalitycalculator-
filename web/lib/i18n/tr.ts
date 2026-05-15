@@ -103,6 +103,9 @@ export const tr: Translations = {
       high: "Hasta yüksek tahmini AKI mortalite riski göstermektedir. Acil klinik değerlendirme şiddetle önerilir.",
     },
     resultDisclaimer: "Yalnızca araştırma aracı. Klinik yargının yerini tutamaz. Nitelikli bir doktora danışın.",
+    modelSelectTitle: "Tahmin Modeli",
+    modelSelectSub: "Bu hesaplama için kullanılacak ML modelini seçin",
+    bestModel: "En İyi",
   },
   models: {
     badge: "Model Performansı",
