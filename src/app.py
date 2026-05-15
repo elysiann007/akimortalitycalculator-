@@ -32,7 +32,7 @@ from train_models import train_all_models, get_predictions, save_models
 from evaluate import evaluate_all_models, get_roc_data, print_metrics_summary, save_metrics
 from feature_importance import (
     extract_all_feature_importance, get_top_n_features, plot_feature_importance,
-    save_feature_importance
+    save_feature_importance, compute_lr_pvalues
 )
 
 def main():
@@ -204,11 +204,14 @@ def main():
         perm_repeats=PERMUTATION_IMPORTANCE_REPEATS
     )
     
-    top_15_df = get_top_n_features(all_importance, n=TOP_N_FEATURES)
+    print("Computing p-values from Logistic Regression (Wald test)...")
+    pvalues_df = compute_lr_pvalues(models['Logistic Regression'], X_train_scaled, y_train)
+
+    top_15_df = get_top_n_features(all_importance, n=TOP_N_FEATURES, pvalues_df=pvalues_df)
     print("\nTop 15 Features:")
     print(top_15_df.to_string(index=False))
-    
-    save_feature_importance(all_importance, top_15_df, TABLES_DIR, formats=['csv', 'excel'])
+
+    save_feature_importance(all_importance, top_15_df, TABLES_DIR, formats=['csv', 'excel'], pvalues_df=pvalues_df)
     
     # Plot feature importance
     fig = plot_feature_importance(all_importance, top_n=15)

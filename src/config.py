@@ -27,14 +27,15 @@ for path in [DATA_DIR, MODELS_DIR, TABLES_DIR, FIGURES_DIR]:
 # Data file paths
 DATA_FILE = DATA_DIR / "deu_icu_mortality.csv"
 
-# PostgreSQL Connection Parameters
-USE_POSTGRES = True
-POSTGRES_HOST = 'localhost'
-POSTGRES_PORT = 5432
-POSTGRES_DATABASE = 'M3'
-POSTGRES_USER = 'postgres'
-POSTGRES_PASSWORD = '93abH@llo810'
-POSTGRES_TABLE = 'deu_retro_clean'
+# PostgreSQL Connection Parameters (training pipeline only — not used by web app)
+import os as _os
+USE_POSTGRES = _os.environ.get('USE_POSTGRES', 'false').lower() == 'true'
+POSTGRES_HOST = _os.environ.get('POSTGRES_HOST', 'localhost')
+POSTGRES_PORT = int(_os.environ.get('POSTGRES_PORT', '5432'))
+POSTGRES_DATABASE = _os.environ.get('POSTGRES_DATABASE', 'M3')
+POSTGRES_USER = _os.environ.get('POSTGRES_USER', 'postgres')
+POSTGRES_PASSWORD = _os.environ.get('POSTGRES_PASSWORD', '')
+POSTGRES_TABLE = _os.environ.get('POSTGRES_TABLE', 'deu_retro_clean')
 POSTGRES_QUERY = f'SELECT * FROM {POSTGRES_TABLE}'
 
 # Model hyperparameters

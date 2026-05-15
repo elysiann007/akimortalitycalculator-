@@ -134,12 +134,28 @@ dmypy.json
 Thumbs.db
 
 # Project-specific
-data/deu_icu_mortality.csv
+data/
+*.csv
+*.log
 
-# outputs — modeller dahil, gereksiz dosyalar hariç
+# outputs — keep models, exclude everything else
 outputs/figures/
 outputs/tables/
 outputs/models/*.tmp
+
+# Credentials / secrets
+.env
+*.env
+
+# Render / deploy artifacts
+.agents/
+graphify-out/
+skills-lock.json
+web/
+M3.backup
+streamlit.log
+streamlit_out.log
+streamlit_err.log
 
 # Claude memory
 .claude/

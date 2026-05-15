@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from typing import Dict, Tuple
 from sklearn.inspection import permutation_importance
+from scipy import stats as scipy_stats
 
 def extract_rf_importance(
     model,
@@ -118,33 +119,63 @@ def extract_all_feature_importance(
     combined = pd.concat(all_importance, ignore_index=True)
     return combined
 
+def compute_lr_pvalues(model, X_scaled: pd.DataFrame, y: pd.Series) -> pd.DataFrame:
+    """Compute Wald test p-values and std errors from a fitted sklearn LogisticRegression"""
+    coef = model.coef_[0]
+    X_arr = X_scaled.values
+    p_hat = model.predict_proba(X_scaled)[:, 1]
+    W = p_hat * (1 - p_hat)
+    H = (X_arr * W[:, None]).T @ X_arr
+    try:
+        cov = np.linalg.inv(H)
+        std_errors = np.sqrt(np.diag(cov))
+    except np.linalg.LinAlgError:
+        std_errors = np.full(len(coef), np.nan)
+    z_scores = coef / std_errors
+    p_values = 2 * (1 - scipy_stats.norm.cdf(np.abs(z_scores)))
+    return pd.DataFrame({
+        'Feature': X_scaled.columns.tolist(),
+        'P_Value': p_values,
+        'Std_Error': std_errors,
+    })
+
+
+def _format_pvalue(p) -> str:
+    if pd.isna(p):
+        return 'N/A'
+    if p < 0.001:
+        return '<0.001'
+    return f'{p:.3f}'
+
+
 def get_top_n_features(
     all_importance: pd.DataFrame,
-    n: int = 15
+    n: int = 15,
+    pvalues_df: pd.DataFrame = None
 ) -> pd.DataFrame:
     """
-    Get top N features by mean importance across all models
-    Excludes kreatininlastvalue
-    
-    Args:
-        all_importance: Combined importance DataFrame
-        n: Number of top features
-    
-    Returns:
-        Top N features DataFrame
+    Get top N features by mean importance across all models.
+    Excludes kreatininlastvalue.
+    Returns columns: Feature, Importance, P_Value, Std
     """
-    # Filter out kreatininlastvalue
-    filtered_importance = all_importance[all_importance['Feature'] != 'kreatininlastvalue']
-    
-    top_n = filtered_importance.groupby('Feature')['Importance'].mean().sort_values(ascending=False).head(n)
-    
+    filtered = all_importance[all_importance['Feature'] != 'kreatininlastvalue']
+    grouped = filtered.groupby('Feature')['Importance']
+    mean_imp = grouped.mean().sort_values(ascending=False).head(n)
+    std_imp = grouped.std().reindex(mean_imp.index).fillna(0)
+
     result_df = pd.DataFrame({
-        'Rank': range(1, len(top_n) + 1),
-        'Feature': top_n.index,
-        'Mean Importance': top_n.values
+        'Feature': mean_imp.index,
+        'Importance': mean_imp.values,
+        'Std': std_imp.values,
     })
-    
-    return result_df
+
+    if pvalues_df is not None:
+        result_df = result_df.merge(pvalues_df[['Feature', 'P_Value']], on='Feature', how='left')
+    else:
+        result_df['P_Value'] = np.nan
+
+    result_df['P_Value'] = result_df['P_Value'].apply(_format_pvalue)
+    return result_df[['Feature', 'Importance', 'P_Value', 'Std']]
 
 def plot_feature_importance(
     all_importance: pd.DataFrame,
@@ -187,44 +218,61 @@ def plot_feature_importance(
     plt.tight_layout()
     return fig
 
+def _save_df_excel(df: pd.DataFrame, filepath: Path) -> None:
+    with pd.ExcelWriter(filepath, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Features')
+        ws = writer.sheets['Features']
+        for col in ws.columns:
+            max_len = max(len(str(cell.value or '')) for cell in col) + 4
+            ws.column_dimensions[col[0].column_letter].width = max_len
+
+
 def save_feature_importance(
     all_importance: pd.DataFrame,
     top_n_df: pd.DataFrame,
     output_dir: Path,
-    formats: list = ['csv', 'excel']
+    formats: list = ['csv', 'excel'],
+    pvalues_df: pd.DataFrame = None
 ) -> None:
-    """
-    Save feature importance tables to disk
-    
-    Args:
-        all_importance: Combined importance DataFrame
-        top_n_df: Top N features DataFrame
-        output_dir: Output directory
-        formats: Output formats ['csv', 'excel']
-    """
+    """Save feature importance tables — all files use columns: Feature, Importance, P_Value, Std"""
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Save top N features
+
+    # ── top_15_features ───────────────────────────────────────────────────────
     if 'csv' in formats:
         filepath = output_dir / "top_15_features.csv"
         top_n_df.to_csv(filepath, index=False)
         print(f"Saved: {filepath}")
-    
     if 'excel' in formats:
         filepath = output_dir / "top_15_features.xlsx"
-        top_n_df.to_excel(filepath, index=False)
+        _save_df_excel(top_n_df, filepath)
         print(f"Saved: {filepath}")
-    
-    # Save per-model importance
+
+    # ── per-model files (same 4-column format) ────────────────────────────────
     for model_name in all_importance['Model'].unique():
-        model_data = all_importance[all_importance['Model'] == model_name].sort_values('Importance', ascending=False)
+        model_data = (
+            all_importance[all_importance['Model'] == model_name]
+            .sort_values('Importance', ascending=False)
+            [['Feature', 'Importance']]
+            .copy()
+        )
+
+        if pvalues_df is not None:
+            model_data = model_data.merge(
+                pvalues_df[['Feature', 'P_Value', 'Std_Error']].rename(columns={'Std_Error': 'Std'}),
+                on='Feature', how='left'
+            )
+            model_data['P_Value'] = model_data['P_Value'].apply(_format_pvalue)
+        else:
+            model_data['P_Value'] = 'N/A'
+            model_data['Std'] = 'N/A'
+
+        model_data = model_data[['Feature', 'Importance', 'P_Value', 'Std']]
         filename = model_name.lower().replace(' ', '_').replace('(', '').replace(')', '')
-        
+
         if 'csv' in formats:
             filepath = output_dir / f"feature_importance_{filename}.csv"
             model_data.to_csv(filepath, index=False)
-        
         if 'excel' in formats:
             filepath = output_dir / f"feature_importance_{filename}.xlsx"
-            model_data.to_excel(filepath, index=False)
+            _save_df_excel(model_data, filepath)
