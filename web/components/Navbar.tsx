@@ -7,18 +7,20 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Activity, Menu, X, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "@/components/ThemeToggle";
-
-const links = [
-  { href: "/", label: "Home" },
-  { href: "/calculator", label: "Calculator" },
-  { href: "/models", label: "Models" },
-  { href: "/research", label: "Research" },
-];
+import { useTranslation } from "@/lib/i18n";
 
 export default function Navbar() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { t, lang, setLang } = useTranslation();
+
+  const links = [
+    { href: "/", label: t.nav.home },
+    { href: "/calculator", label: t.nav.calculator },
+    { href: "/models", label: t.nav.models },
+    { href: "/research", label: t.nav.research },
+  ];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -50,7 +52,7 @@ export default function Navbar() {
             <div className="leading-none">
               <span className="text-sm font-bold tracking-wide" style={{ color: "var(--text)" }}>AKI</span>
               <span className="text-sm font-bold text-cyan-500 tracking-wide"> Predict</span>
-              <div className="text-[10px] font-medium tracking-wider" style={{ color: "var(--muted)" }}>DEU HOSPITAL · RESEARCH</div>
+              <div className="text-[10px] font-medium tracking-wider" style={{ color: "var(--muted)" }}>{t.nav.badge}</div>
             </div>
           </Link>
 
@@ -82,8 +84,20 @@ export default function Navbar() {
             })}
           </nav>
 
-          {/* Right: theme toggle + CTA */}
-          <div className="hidden md:flex items-center gap-3">
+          {/* Right: lang toggle + theme toggle + CTA */}
+          <div className="hidden md:flex items-center gap-2">
+            <button
+              onClick={() => setLang(lang === "en" ? "tr" : "en")}
+              className="px-2.5 py-1 rounded-lg text-xs font-bold tracking-wider transition-colors duration-200 border"
+              style={{
+                color: "var(--sub)",
+                borderColor: "var(--border)",
+                background: "transparent",
+              }}
+              title={lang === "en" ? "Türkçe'ye geç" : "Switch to English"}
+            >
+              {lang === "en" ? "TR" : "EN"}
+            </button>
             <ThemeToggle
               className="p-2 rounded-lg transition-colors duration-200 hover:bg-black/5 dark:hover:bg-white/5"
               style={{ color: "var(--sub)" } as React.CSSProperties}
@@ -93,12 +107,19 @@ export default function Navbar() {
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-cyan-400 text-slate-900 text-sm font-bold rounded-lg hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] transition-all duration-200 hover:scale-[1.02]"
             >
               <Zap className="w-3.5 h-3.5" />
-              Calculate Risk
+              {t.nav.calculateRisk}
             </Link>
           </div>
 
-          {/* Mobile: toggle + hamburger */}
+          {/* Mobile: lang + theme + hamburger */}
           <div className="md:hidden flex items-center gap-1">
+            <button
+              onClick={() => setLang(lang === "en" ? "tr" : "en")}
+              className="px-2 py-1 rounded-lg text-xs font-bold border transition-colors"
+              style={{ color: "var(--sub)", borderColor: "var(--border)" }}
+            >
+              {lang === "en" ? "TR" : "EN"}
+            </button>
             <ThemeToggle
               className="p-2 rounded-lg transition-colors"
               style={{ color: "var(--sub)" } as React.CSSProperties}
@@ -151,7 +172,7 @@ export default function Navbar() {
                 onClick={() => setMobileOpen(false)}
                 className="mt-2 px-4 py-3 text-sm font-bold rounded-xl bg-gradient-to-r from-cyan-500 to-cyan-400 text-slate-900 text-center"
               >
-                Calculate Risk
+                {t.nav.calculateRisk}
               </Link>
             </nav>
           </motion.div>
