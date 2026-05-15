@@ -147,6 +147,9 @@ outputs/models/*.tmp
 .env
 *.env
 
+# Allow web/lib (overrides the Python lib/ rule above)
+!web/lib/
+
 # Render / deploy artifacts
 .agents/
 graphify-out/
