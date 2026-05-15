@@ -1,0 +1,202 @@
+@import "tailwindcss";
+
+:root {
+  --bg:       #070b14;
+  --bg2:      #0d1425;
+  --bg3:      #111827;
+  --border:   rgba(99,179,237,0.12);
+  --border2:  rgba(99,179,237,0.22);
+  --primary:  #22d3ee;
+  --primary2: #06b6d4;
+  --accent:   #6366f1;
+  --accent2:  #818cf8;
+  --success:  #10b981;
+  --warning:  #f59e0b;
+  --danger:   #ef4444;
+  --text:     #f1f5f9;
+  --sub:      #94a3b8;
+  --muted:    #475569;
+  --glow:     rgba(34,211,238,0.15);
+  --glow2:    rgba(99,102,241,0.15);
+  --nav-bg:   rgba(7, 11, 20, 0.9);
+  --mobile-nav-bg: rgba(7, 11, 20, 0.95);
+  --card-bg:  rgba(255,255,255,0.02);
+  --card-border: rgba(255,255,255,0.07);
+}
+
+[data-theme="light"] {
+  --bg:       #f8fafc;
+  --bg2:      #f1f5f9;
+  --bg3:      #e2e8f0;
+  --border:   rgba(0,0,0,0.08);
+  --border2:  rgba(0,0,0,0.16);
+  --primary:  #0891b2;
+  --primary2: #0e7490;
+  --accent:   #4f46e5;
+  --accent2:  #6366f1;
+  --success:  #059669;
+  --warning:  #d97706;
+  --danger:   #dc2626;
+  --text:     #0f172a;
+  --sub:      #334155;
+  --muted:    #64748b;
+  --glow:     rgba(8,145,178,0.06);
+  --glow2:    rgba(79,70,229,0.06);
+  --nav-bg:   rgba(248, 250, 252, 0.9);
+  --mobile-nav-bg: rgba(248, 250, 252, 0.95);
+  --card-bg:  rgba(0,0,0,0.025);
+  --card-border: rgba(0,0,0,0.07);
+}
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+::selection {
+  background: rgba(34, 211, 238, 0.25);
+  color: #fff;
+}
+
+[data-theme="light"] ::selection {
+  background: rgba(8, 145, 178, 0.2);
+  color: #0f172a;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg2);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--card-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary2);
+}
+
+/* Gradient text utility */
+.gradient-text {
+  background: linear-gradient(135deg, #22d3ee 0%, #818cf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glass card */
+.glass {
+  background: rgba(13, 20, 37, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+}
+
+[data-theme="light"] .glass {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+/* Glow effects */
+.glow-teal {
+  box-shadow: 0 0 30px rgba(34,211,238,0.15), 0 0 60px rgba(34,211,238,0.05);
+}
+.glow-purple {
+  box-shadow: 0 0 30px rgba(99,102,241,0.15), 0 0 60px rgba(99,102,241,0.05);
+}
+
+/* Range slider styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  box-shadow: 0 0 0 3px rgba(34,211,238,0.3), 0 2px 6px rgba(0,0,0,0.4);
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 4px rgba(34,211,238,0.4), 0 2px 8px rgba(0,0,0,0.5);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 0 3px rgba(34,211,238,0.3);
+}
+
+/* Noise overlay for depth */
+.noise {
+  position: relative;
+}
+.noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+/* ─── Light mode overrides for hardcoded Tailwind utilities ─── */
+
+/* Headings and white text → themed text color */
+[data-theme="light"] .text-white {
+  color: var(--text) !important;
+}
+
+/* Semi-transparent white borders → themed border */
+[data-theme="light"] [class*="border-white"] {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Semi-transparent white card backgrounds → subtle light card */
+[data-theme="light"] [class*="bg-white/"] {
+  background-color: rgba(0, 0, 0, 0.025) !important;
+}
+
+/* Number input text in light mode */
+[data-theme="light"] input[type="number"] {
+  color: var(--text);
+  background-color: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+[data-theme="light"] input[type="number"]:focus {
+  border-color: var(--primary);
+}
+
+/* Slate text shades — already readable in both modes, kept as-is */

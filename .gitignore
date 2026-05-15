@@ -151,7 +151,6 @@ outputs/models/*.tmp
 .agents/
 graphify-out/
 skills-lock.json
-web/
 M3.backup
 streamlit.log
 streamlit_out.log
