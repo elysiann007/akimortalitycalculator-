@@ -104,6 +104,11 @@ export const en = {
     modelSelectTitle: "Prediction Model",
     modelSelectSub: "Select which ML model to use for this calculation",
     bestModel: "Best",
+    datasetLabel: "Dataset",
+    datasetDeu: "DEU Hospital",
+    datasetMimic: "MIMIC-III",
+    datasetDeuSub: "2,230 patients · Local cohort",
+    datasetMimicSub: "1,489 patients · PhysioNet",
   },
   models: {
     badge: "Model Performance",
@@ -126,6 +131,18 @@ export const en = {
     ctaButton: "Try the Risk Calculator",
     aucLabel: "AUC",
     metricLabels: { auc: "AUC", ca: "Accuracy", f1: "F1 Score", precision: "Precision", recall: "Recall", mcc: "MCC" },
+    datasetLabel: "Dataset",
+    datasetDeu: "DEU Hospital",
+    datasetMimic: "MIMIC-III",
+    datasetDeuSub: "2,230 patients · Local cohort",
+    datasetMimicSub: "1,489 patients · PhysioNet",
+    mimicDesc: "All four models evaluated on a stratified 20% hold-out from MIMIC-III. Metrics computed at 0.5 decision threshold.",
+    mimicFindings: [
+      "Random Forest achieved the highest AUC of 82.3% on MIMIC-III, outperforming all other models.",
+      "Creatinine (last measured) was the dominant predictor, followed by mechanical ventilation and mean systolic blood pressure.",
+      "Lower AUCs (78–82%) vs DEU (86–91%) reflect the expected generalization gap across independent external cohorts.",
+      "All four models maintained AUC > 78%, validating the clinical predictive value of shared laboratory and demographic features.",
+    ],
     modelDescriptions: [
       "200 estimators, learning rate 0.05. Sequential ensemble that corrects prior errors.",
       "200 decision trees with Gini importance scores. Robust to outliers.",
@@ -215,6 +232,17 @@ export const en = {
     disclaimerTitle: "Important Notice",
     disclaimerText: "This system was developed exclusively for academic research purposes. It must not be used for clinical decision-making, patient triage, or any medical diagnosis. All model outputs are statistical estimates based on retrospective data and must be reviewed by a qualified clinician before any action is taken. The authors accept no liability for clinical outcomes.",
     disclaimerTags: ["Research use only", "Not CE/FDA cleared", "Requires clinical validation"],
+    mimicStatsTitle: "MIMIC-III External Validation Cohort",
+    mimicStatsLabels: [
+      "Total ICU Patients",
+      "Train / Test Split",
+      "Raw Features",
+      "Model Features",
+      "Survived",
+      "Deceased",
+      "Imputation",
+      "Random Seed",
+    ],
   },
 };
 

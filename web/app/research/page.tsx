@@ -37,7 +37,8 @@ const PIPELINE_ICONS = [
 
 const AKI_COLORS = ["#22d3ee", "#818cf8", "#34d399"];
 
-const STATS_VALUES = ["2,230", "80% / 20%", "30+", "15", "~72%", "~28%", "5", "42"];
+const STATS_VALUES       = ["2,230", "80% / 20%", "30+", "15", "~72%", "~28%", "5", "42"];
+const MIMIC_STATS_VALUES = ["1,489", "80% / 20%", "56",  "47", "~52%", "~48%", "Median", "42"];
 
 const TECH_ITEMS = [
   { name: "Python 3.9+", icon: <Code2 className="w-5 h-5" />, color: "#22d3ee" },
@@ -81,18 +82,39 @@ export default function ResearchPage() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-8">
-        {/* Hero stats */}
+        {/* DEU cohort stats */}
         <FadeUp>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {STATS_VALUES.map((value, i) => (
-              <div
-                key={i}
-                className="p-4 rounded-xl border border-white/[0.07] bg-white/[0.02] text-center"
-              >
-                <div className="text-lg font-bold text-white mb-1">{value}</div>
-                <div className="text-xs text-slate-600">{t.research.statsLabels[i]}</div>
-              </div>
-            ))}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-cyan-400" />
+              <span className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">DEU Hospital Cohort</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {STATS_VALUES.map((value, i) => (
+                <div key={i} className="p-4 rounded-xl border border-white/[0.07] bg-white/[0.02] text-center">
+                  <div className="text-lg font-bold text-white mb-1">{value}</div>
+                  <div className="text-xs text-slate-600">{t.research.statsLabels[i]}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </FadeUp>
+
+        {/* MIMIC cohort stats */}
+        <FadeUp delay={0.04}>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-indigo-400" />
+              <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">{t.research.mimicStatsTitle}</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {MIMIC_STATS_VALUES.map((value, i) => (
+                <div key={i} className="p-4 rounded-xl border border-indigo-400/[0.10] bg-indigo-400/[0.03] text-center">
+                  <div className="text-lg font-bold text-white mb-1">{value}</div>
+                  <div className="text-xs text-slate-600">{t.research.mimicStatsLabels[i]}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </FadeUp>
 
