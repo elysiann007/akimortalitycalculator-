@@ -5,7 +5,7 @@ import { motion, useInView } from "framer-motion";
 import {
   GitBranch, Database, Microscope, Brain, FlaskConical,
   BarChart3, TrendingUp, CheckCircle, Shield, Server,
-  Activity,
+  Activity, Code2, Dna, Table2, LineChart, Archive, Zap,
 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 
@@ -40,14 +40,14 @@ const AKI_COLORS = ["#22d3ee", "#818cf8", "#34d399"];
 const STATS_VALUES = ["2,230", "80% / 20%", "30+", "15", "~72%", "~28%", "5", "42"];
 
 const TECH_ITEMS = [
-  { name: "Python 3.9+", icon: "🐍" },
-  { name: "scikit-learn", icon: "🔬" },
-  { name: "miceforest", icon: "🧬" },
-  { name: "PostgreSQL", icon: "🗄️" },
-  { name: "pandas / NumPy", icon: "📊" },
-  { name: "matplotlib", icon: "📈" },
-  { name: "joblib", icon: "💾" },
-  { name: "Streamlit", icon: "⚡" },
+  { name: "Python 3.9+", icon: <Code2 className="w-5 h-5" />, color: "#22d3ee" },
+  { name: "scikit-learn", icon: <Microscope className="w-5 h-5" />, color: "#818cf8" },
+  { name: "miceforest", icon: <Dna className="w-5 h-5" />, color: "#fb923c" },
+  { name: "PostgreSQL", icon: <Database className="w-5 h-5" />, color: "#34d399" },
+  { name: "pandas / NumPy", icon: <Table2 className="w-5 h-5" />, color: "#f472b6" },
+  { name: "matplotlib", icon: <LineChart className="w-5 h-5" />, color: "#fbbf24" },
+  { name: "joblib", icon: <Archive className="w-5 h-5" />, color: "#818cf8" },
+  { name: "Streamlit", icon: <Zap className="w-5 h-5" />, color: "#22d3ee" },
 ];
 
 export default function ResearchPage() {
@@ -156,7 +156,7 @@ export default function ResearchPage() {
                   key={item.name}
                   className="flex items-center gap-3 p-3 rounded-xl border border-white/[0.05] bg-white/[0.02] hover:border-white/[0.09] transition-colors"
                 >
-                  <span className="text-xl">{item.icon}</span>
+                  <span style={{ color: item.color }}>{item.icon}</span>
                   <div>
                     <div className="text-xs font-semibold text-white">{item.name}</div>
                     <div className="text-[10px] text-slate-600">{t.research.techRoles[i]}</div>
