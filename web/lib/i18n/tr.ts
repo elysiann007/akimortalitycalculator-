@@ -213,7 +213,7 @@ export const tr: Translations = {
       },
     ],
     techTitle: "Teknik Yığın",
-    techRoles: ["Çalışma Zamanı", "ML Modelleri", "MICE Atama", "Veri Kaynağı", "Veri İşleme", "Görselleştirmeler", "Model Serileştirme", "Özgün Web Arayüzü"],
+    techRoles: ["Çalışma Zamanı", "ML Modelleri", "MICE Atama", "Veri Kaynağı", "Veri İşleme", "Görselleştirmeler", "Model Serileştirme", "Web Uygulaması"],
     disclaimerTitle: "Önemli Uyarı",
     disclaimerText: "Bu sistem yalnızca akademik araştırma amaçlı geliştirilmiştir. Klinik karar alma, hasta triyajı veya herhangi bir tıbbi tanı için kullanılmamalıdır. Tüm model çıktıları retrospektif verilere dayalı istatistiksel tahminlerdir ve herhangi bir işlem yapılmadan önce nitelikli bir klinisyen tarafından incelenmelidir. Yazarlar klinik sonuçlar için hiçbir sorumluluk kabul etmez.",
     disclaimerTags: ["Yalnızca araştırma amaçlı", "CE/FDA onaylı değil", "Klinik doğrulama gerektirir"],

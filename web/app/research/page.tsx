@@ -5,7 +5,7 @@ import { motion, useInView } from "framer-motion";
 import {
   GitBranch, Database, Microscope, Brain, FlaskConical,
   BarChart3, TrendingUp, CheckCircle, Shield, Server,
-  Activity, Code2, Dna, Table2, LineChart, Archive, Zap,
+  Activity, Code2, Dna, Table2, LineChart, Archive, Globe,
 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 
@@ -47,7 +47,7 @@ const TECH_ITEMS = [
   { name: "pandas / NumPy", icon: <Table2 className="w-5 h-5" />, color: "#f472b6" },
   { name: "matplotlib", icon: <LineChart className="w-5 h-5" />, color: "#fbbf24" },
   { name: "joblib", icon: <Archive className="w-5 h-5" />, color: "#818cf8" },
-  { name: "Streamlit", icon: <Zap className="w-5 h-5" />, color: "#22d3ee" },
+  { name: "Next.js 16", icon: <Globe className="w-5 h-5" />, color: "#22d3ee" },
 ];
 
 export default function ResearchPage() {

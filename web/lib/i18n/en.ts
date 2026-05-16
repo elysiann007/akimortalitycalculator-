@@ -211,7 +211,7 @@ export const en = {
       },
     ],
     techTitle: "Technical Stack",
-    techRoles: ["Runtime", "ML Models", "MICE Imputation", "Data Source", "Data Processing", "Visualizations", "Model Serialization", "Original Web UI"],
+    techRoles: ["Runtime", "ML Models", "MICE Imputation", "Data Source", "Data Processing", "Visualizations", "Model Serialization", "Web Application"],
     disclaimerTitle: "Important Notice",
     disclaimerText: "This system was developed exclusively for academic research purposes. It must not be used for clinical decision-making, patient triage, or any medical diagnosis. All model outputs are statistical estimates based on retrospective data and must be reviewed by a qualified clinician before any action is taken. The authors accept no liability for clinical outcomes.",
     disclaimerTags: ["Research use only", "Not CE/FDA cleared", "Requires clinical validation"],
