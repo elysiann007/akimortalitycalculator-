@@ -200,3 +200,18 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* Slate text shades — already readable in both modes, kept as-is */
+
+/* Scroll indicator bounce — CSS instead of Framer Motion for zero JS cost */
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(8px); }
+}
+.animate-bob {
+  animation: bob 1.5s ease-in-out infinite;
+}
+
+/* Promote static blur blobs to their own compositor layer so particle/framer animations don't trigger repaints */
+.gpu-layer {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
