@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Activity, FlaskConical, Zap, AlertTriangle,
@@ -142,6 +142,7 @@ export default function CalculatorPage() {
   const [result, setResult]             = useState<RiskResult | null>(null);
   const [loading, setLoading]           = useState(false);
   const [openInfo, setOpenInfo]         = useState<string | null>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
 
   const modelOptions  = dataset === "deu" ? DEU_MODEL_OPTIONS  : MIMIC_MODEL_OPTIONS;
   const predictors    = dataset === "deu" ? DEU_PREDICTORS     : MIMIC_PREDICTORS;
@@ -161,6 +162,10 @@ export default function CalculatorPage() {
     await new Promise((r) => setTimeout(r, 900));
     setResult(computeRisk(values, selectedModel, dataset));
     setLoading(false);
+    // On mobile, scroll result into view automatically
+    setTimeout(() => {
+      resultRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 100);
   };
 
   const handleReset = () => {
@@ -339,11 +344,7 @@ export default function CalculatorPage() {
                 >
                   {loading ? (
                     <>
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        className="w-4 h-4 border-2 border-slate-900/30 border-t-slate-900 rounded-full"
-                      />
+                      <div className="w-4 h-4 border-2 border-slate-900/30 border-t-slate-900 rounded-full animate-spin" />
                       {t.calculator.analyzing}
                     </>
                   ) : (
@@ -365,7 +366,7 @@ export default function CalculatorPage() {
             </div>
 
             {/* ── Right: Result panel ── */}
-            <div className="space-y-4">
+            <div className="space-y-4" ref={resultRef}>
               <AnimatePresence mode="wait">
                 {!result && !loading && (
                   <motion.div
@@ -395,10 +396,8 @@ export default function CalculatorPage() {
                     style={{ borderColor: `${activeModel.color}30`, background: `${activeModel.color}05` }}
                   >
                     <div className="relative">
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                        className="w-16 h-16 rounded-full border-2 border-transparent"
+                      <div
+                        className="w-16 h-16 rounded-full border-2 border-transparent animate-spin-slow"
                         style={{ borderTopColor: activeModel.color, borderRightColor: `${activeModel.color}40` }}
                       />
                       <div className="absolute inset-0 flex items-center justify-center">

@@ -11,11 +11,9 @@ interface Particle {
   pulseSpeed: number;
 }
 
-const COUNT = 45;
 const CONNECT_DIST = 100;
 const CONNECT_DIST_SQ = CONNECT_DIST * CONNECT_DIST;
-const FPS_CAP = 30;
-const FRAME_INTERVAL = 1000 / FPS_CAP;
+const FRAME_INTERVAL = 1000 / 30; // 30fps cap
 
 export default function ParticleField() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -26,6 +24,11 @@ export default function ParticleField() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // Fewer particles, no connections on touch/mobile devices
+    const isMobile = window.matchMedia("(pointer: coarse)").matches;
+    const COUNT = isMobile ? 20 : 45;
+    const CONNECT = !isMobile;
+
     const resize = () => {
       canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
@@ -33,7 +36,7 @@ export default function ParticleField() {
     resize();
     window.addEventListener("resize", resize, { passive: true });
 
-    // Cache color in a ref — avoid DOM query every frame
+    // Cache color — avoid DOM query every frame
     let color = document.documentElement.getAttribute("data-theme") === "light"
       ? "8,145,178" : "34,211,238";
     const observer = new MutationObserver(() => {
@@ -65,7 +68,6 @@ export default function ParticleField() {
       const h = canvas.height;
       ctx.clearRect(0, 0, w, h);
 
-      // Update + draw dots
       for (let i = 0; i < COUNT; i++) {
         const p = particles[i];
         p.x += p.vx;
@@ -84,21 +86,21 @@ export default function ParticleField() {
         ctx.fill();
       }
 
-      // Draw connections — squared distance avoids sqrt in the hot rejection path
-      ctx.lineWidth = 0.5;
-      for (let i = 0; i < COUNT; i++) {
-        for (let j = i + 1; j < COUNT; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dSq = dx * dx + dy * dy;
-          if (dSq < CONNECT_DIST_SQ) {
-            // Only call sqrt for the ~5–10% of pairs that actually connect
-            const alpha = (1 - Math.sqrt(dSq) / CONNECT_DIST) * 0.12;
-            ctx.strokeStyle = `rgba(${color},${alpha})`;
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.stroke();
+      if (CONNECT) {
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i < COUNT; i++) {
+          for (let j = i + 1; j < COUNT; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dSq = dx * dx + dy * dy;
+            if (dSq < CONNECT_DIST_SQ) {
+              const alpha = (1 - Math.sqrt(dSq) / CONNECT_DIST) * 0.12;
+              ctx.strokeStyle = `rgba(${color},${alpha})`;
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.stroke();
+            }
           }
         }
       }

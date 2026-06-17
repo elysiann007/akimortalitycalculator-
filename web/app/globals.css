@@ -215,3 +215,17 @@ input[type="range"]::-moz-range-thumb {
   transform: translateZ(0);
   backface-visibility: hidden;
 }
+
+/* 2s CSS spin for loading panel (replaces Framer Motion infinite rotate) */
+.animate-spin-slow {
+  animation: spin 2s linear infinite;
+}
+
+/* Respect OS-level reduced-motion setting */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -83,9 +83,9 @@ export default function HomePage() {
         <ParticleField />
 
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-cyan-400/5 blur-[120px] gpu-layer" />
-          <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-indigo-500/8 blur-[100px] gpu-layer" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-cyan-400/3 blur-[150px] gpu-layer" />
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-cyan-400/5 blur-[60px] sm:blur-[120px] gpu-layer" />
+          <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-indigo-500/8 blur-[50px] sm:blur-[100px] gpu-layer" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-cyan-400/3 blur-[80px] sm:blur-[150px] gpu-layer" />
         </div>
 
         <div
